@@ -58,7 +58,7 @@ export default function Home() {
             backgroundSize: "3px 3px",
           }}
           aria-hidden="true"
-        />
+        />              
         <div
           className="pointer-events-none absolute -top-1/5 right-[-8%] w-[46%] aspect-square rounded-full"
           style={{
@@ -91,14 +91,14 @@ export default function Home() {
                 className="inline-flex items-center gap-2 rounded font-semibold text-[0.92rem] px-6 py-3.5 bg-gold-bright text-[#241804] shadow-[0_14px_30px_-14px_rgba(230,181,61,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-14px_rgba(230,181,61,0.75)]"
               >
                 {data.ctaPrimaryText}
-              </a>
+              </a>  
               <a
                 href={data.ctaSecondaryLink}
                 className="inline-flex items-center gap-2 rounded font-semibold text-[0.92rem] px-6 py-3.5 border border-white/30 text-white transition hover:border-white/65 hover:-translate-y-0.5"
               >
                 {data.ctaSecondaryText}
               </a>
-            </div>
+            </div>    
 
             <div className="flex flex-wrap gap-6 sm:gap-10 mt-12 pt-7 border-t border-white/[0.14]">
               {data.stats.map((s, i) => (

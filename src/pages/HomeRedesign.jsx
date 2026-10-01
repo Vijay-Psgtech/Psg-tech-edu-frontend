@@ -49,7 +49,11 @@ const GALLERY_IMAGES = [
 ];
 
 function ArrowIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h13M13 6l6 6-6 6" />
+    </svg>
+  );
 }
 
 /** Force a set of CSS properties onto a DOM node with !important priority.
@@ -116,7 +120,13 @@ function useGalleryKeyframes() {
  *   project's own `.home-photo img` / `.home-programme-card-image img`
  *   rules can never collapse it into a stacked tile again.
  */
-function ImageGallery({ images, interval = 5000, minHeight = 460, aspect = "16 / 10", className = "" }) {
+function ImageGallery({
+  images,
+  interval = 5000,
+  minHeight = 460,
+  aspect = "16 / 10",
+  className = "",
+}) {
   useGalleryKeyframes();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -175,7 +185,8 @@ function ImageGallery({ images, interval = 5000, minHeight = 460, aspect = "16 /
 
   useEffect(() => {
     if (!images || images.length <= 1 || paused) return undefined;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return undefined;
 
     const timer = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % images.length);
@@ -195,7 +206,9 @@ function ImageGallery({ images, interval = 5000, minHeight = 460, aspect = "16 /
       {images.map((image, i) => (
         <img
           key={image.src}
-          ref={(el) => { slideRefs.current[i] = el; }}
+          ref={(el) => {
+            slideRefs.current[i] = el;
+          }}
           src={image.src}
           alt={image.alt}
           className="home-gallery-slide"
@@ -210,7 +223,8 @@ function ImageGallery({ images, interval = 5000, minHeight = 460, aspect = "16 /
           inset: 0,
           zIndex: 3,
           pointerEvents: "none",
-          background: "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%)",
+          background:
+            "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%)",
         }}
       />
 
@@ -261,7 +275,9 @@ export default function HomeRedesign() {
   const [typedHeading, setTypedHeading] = useState("");
 
   useEffect(() => {
-    getHomepage().then(setData).catch((err) => setError(err.message));
+    getHomepage()
+      .then(setData)
+      .catch((err) => setError(err.message));
   }, []);
 
   useEffect(() => {
@@ -282,23 +298,41 @@ export default function HomeRedesign() {
       items.forEach((item) => item.classList.add("is-visible"));
       return undefined;
     }
-    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
-      if (entry.isIntersecting) { entry.target.classList.add("is-visible"); observer.unobserve(entry.target); }
-    }), { threshold: 0.14 });
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        }),
+      { threshold: 0.14 },
+    );
     items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
   }, [data]);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
-    const updateParallax = () => document.documentElement.style.setProperty("--home-parallax", `${Math.min(window.scrollY, 900) * 0.13}px`);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return undefined;
+    const updateParallax = () =>
+      document.documentElement.style.setProperty(
+        "--home-parallax",
+        `${Math.min(window.scrollY, 900) * 0.13}px`,
+      );
     updateParallax();
     window.addEventListener("scroll", updateParallax, { passive: true });
     return () => window.removeEventListener("scroll", updateParallax);
   }, []);
 
-  if (error) return <div className="page-state error">Couldn't load homepage content: {error}</div>;
-  if (!data) return <div className="page-state loading">Loading PSG Tech...</div>;
+  if (error)
+    return (
+      <div className="page-state error">
+        Couldn't load homepage content: {error}
+      </div>
+    );
+  if (!data)
+    return <div className="page-state loading">Loading PSG Tech...</div>;
 
   return (
     <div className="home-redesign">
@@ -306,26 +340,62 @@ export default function HomeRedesign() {
 
       <main>
         <section className="home-hero" id="admissions">
-          <video className="home-hero-video" autoPlay muted loop playsInline poster={IMAGES.campus} aria-hidden="true">
+          <video
+            className="home-hero-video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={IMAGES.campus}
+            aria-hidden="true"
+          >
             <source src="/assets/background.mp4" type="video/mp4" />
           </video>
           <div className="home-hero-shade" aria-hidden="true" />
           <div className="home-hero-content">
             <div className="home-hero-copy">
-              <span className="home-kicker"><i /> {data.badgeText}</span>
-              <h1 aria-label={data.heading}><span className="typewriter-text">{typedHeading}</span></h1>
+              <span className="home-kicker">
+                <i /> {data.badgeText}
+              </span>
+              <h1 aria-label={data.heading}>
+                <span className="typewriter-text">{typedHeading}</span>
+              </h1>
               <p>{data.subheading}</p>
               <div className="home-actions">
-                <a className="home-button home-button-gold" href={data.ctaPrimaryLink}>{data.ctaPrimaryText}<ArrowIcon /></a>
-                <a className="home-button home-button-ghost" href={data.ctaSecondaryLink}>{data.ctaSecondaryText}<ArrowIcon /></a>
+                <a
+                  className="home-button home-button-gold"
+                  href={data.ctaPrimaryLink}
+                >
+                  {data.ctaPrimaryText}
+                  <ArrowIcon />
+                </a>
+                <a
+                  className="home-button home-button-ghost"
+                  href={data.ctaSecondaryLink}
+                >
+                  {data.ctaSecondaryText}
+                  <ArrowIcon />
+                </a>
               </div>
             </div>
           </div>
-          <div className="home-scroll-note"><span>Scroll to explore</span><i /></div>
+          <div className="home-scroll-note">
+            <span>Scroll to explore</span>
+            <i />
+          </div>
         </section>
 
-        <section className="home-stats" aria-label="PSG Tech milestones" data-reveal>
-          {(data.stats || []).map((stat, index) => <div className="home-stat" key={index}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}
+        <section
+          className="home-stats"
+          aria-label="PSG Tech milestones"
+          data-reveal
+        >
+          {(data.stats || []).map((stat, index) => (
+            <div className="home-stat" key={index}>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </div>
+          ))}
         </section>
 
         {/*
@@ -335,14 +405,16 @@ export default function HomeRedesign() {
           explicit share instead of being squeezed by that grid track.
         */}
         <section
-          ref={(el) => forceStyles(el, {
-            display: "flex",
-            "flex-wrap": "wrap",
-            "align-items": "center",
-            gap: "48px",
-            width: "min(1500px, calc(100% - 40px))",
-            "max-width": "calc(100% - 40px)",
-          })}
+          ref={(el) =>
+            forceStyles(el, {
+              display: "flex",
+              "flex-wrap": "wrap",
+              "align-items": "center",
+              gap: "48px",
+              width: "min(1500px, calc(100% - 40px))",
+              "max-width": "calc(100% - 40px)",
+            })
+          }
           className="home-intro"
           id="academics"
           data-reveal
@@ -352,36 +424,137 @@ export default function HomeRedesign() {
             className="home-photo home-photo-left"
             style={{ flex: "1.6 1 0%" }}
           >
-            <ImageGallery images={GALLERY_IMAGES} interval={4500} minHeight={480} aspect="16 / 10" />
+            <ImageGallery
+              images={GALLERY_IMAGES}
+              interval={4500}
+              minHeight={480}
+              aspect="16 / 10"
+            />
             <span>Peelamedu · Coimbatore</span>
           </div>
-          <div className="home-intro-copy" style={{ flex: "1 1 380px", minWidth: "320px" }}><span className="home-section-label">An institution with purpose</span><h2>{data.welcomeTitle}</h2><p>{data.welcomeBody}</p><a className="home-text-link" href="/#campus">Discover the campus <ArrowIcon /></a></div>
+          <div
+            className="home-intro-copy"
+            style={{ flex: "1 1 380px", minWidth: "320px" }}
+          >
+            <span className="home-section-label">
+              An institution with purpose
+            </span>
+            <h2>{data.welcomeTitle}</h2>
+            <p>{data.welcomeBody}</p>
+            <a className="home-text-link" href="/#campus">
+              Discover the campus <ArrowIcon />
+            </a>
+          </div>
         </section>
 
         <section className="home-programmes" id="research" data-reveal>
-          <div className="home-section-heading"><div><span className="home-section-label">Inside PSG Tech</span><h2>Where ideas become useful.</h2></div><p>From foundational learning to ambitious research, every pathway is designed to create work that matters.</p></div>
+          <div className="home-section-heading">
+            <div>
+              <span className="home-section-label">Inside PSG Tech</span>
+              <h2>Where ideas become useful.</h2>
+            </div>
+            <p>
+              From foundational learning to ambitious research, every pathway is
+              designed to create work that matters.
+            </p>
+          </div>
           <div className="home-programme-grid">
             <article
               ref={wideWrapperRef()}
               className="home-programme-card home-programme-card-image"
             >
-              <ImageGallery images={GALLERY_IMAGES} interval={5200} minHeight={420} aspect="4 / 3" />
-              <div><span>01 · Research</span><h3>Question deeply.<br />Build boldly.</h3></div>
+              <ImageGallery
+                images={GALLERY_IMAGES}
+                interval={5200}
+                minHeight={420}
+                aspect="4 / 3"
+              />
+              <div>
+                <span>01 · Research</span>
+                <h3>
+                  Question deeply.
+                  <br />
+                  Build boldly.
+                </h3>
+              </div>
             </article>
-            <article className="home-programme-card home-programme-card-text"><span className="home-card-number">02</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 21V7l8-4 8 4v14M4 21h16M9 21V11h6v10" /></svg><h3>Learning that travels beyond the classroom.</h3><p>Industry-ready programmes, active labs, and a community that keeps moving forward.</p><a className="home-text-link" href="/departments/cse">Explore departments <ArrowIcon /></a></article>
-            <article className="home-programme-card home-programme-card-maroon"><span className="home-card-number">03</span><span className="home-section-label">Campus life</span><h3>A place to find your people.</h3><p>Clubs, hostels, libraries, and shared spaces turn a college into a lasting community.</p><a className="home-light-link" href="/#campus">See campus life <ArrowIcon /></a></article>
+            <article className="home-programme-card home-programme-card-text">
+              <span className="home-card-number">02</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M4 21V7l8-4 8 4v14M4 21h16M9 21V11h6v10" />
+              </svg>
+              <h3>Learning that travels beyond the classroom.</h3>
+              <p>
+                Industry-ready programmes, active labs, and a community that
+                keeps moving forward.
+              </p>
+              <a className="home-text-link" href="/departments/cse">
+                Explore departments <ArrowIcon />
+              </a>
+            </article>
+            <article className="home-programme-card home-programme-card-maroon">
+              <span className="home-card-number">03</span>
+              <span className="home-section-label">Campus life</span>
+              <h3>A place to find your people.</h3>
+              <p>
+                Clubs, hostels, libraries, and shared spaces turn a college into
+                a lasting community.
+              </p>
+              <a className="home-light-link" href="/#campus">
+                See campus life <ArrowIcon />
+              </a>
+            </article>
           </div>
         </section>
 
         <section className="home-latest" id="campus" data-reveal>
-          <div className="home-latest-header"><div><span className="home-section-label">Stay in the know</span><h2>Latest from campus</h2></div><a className="home-text-link" href="#announcements">All announcements <ArrowIcon /></a></div>
-          <div className="home-latest-grid"><div className="home-announcements" id="announcements">{(data.announcements || []).map((item, index) => <a className="home-announcement" href={item.link || "#announcements"} key={index}><span>{item.date}</span><strong>{item.title}</strong><ArrowIcon /></a>)}</div><div className="home-latest-image"><img src={IMAGES.students} alt="PSG Tech students on campus" /><div><span>One campus.</span><strong>Many beginnings.</strong></div></div></div>
+          <div className="home-latest-header">
+            <div>
+              <span className="home-section-label">Stay in the know</span>
+              <h2>Latest from campus</h2>
+            </div>
+            <a className="home-text-link" href="#announcements">
+              All announcements <ArrowIcon />
+            </a>
+          </div>
+          <div className="home-latest-grid">
+            <div className="home-announcements" id="announcements">
+              {(data.announcements || []).map((item, index) => (
+                <a
+                  className="home-announcement"
+                  href={item.link || "#announcements"}
+                  key={index}
+                >
+                  <span>{item.date}</span>
+                  <strong>{item.title}</strong>
+                  <ArrowIcon />
+                </a>
+              ))}
+            </div>
+            <div className="home-latest-image">
+              <img src={IMAGES.students} alt="PSG Tech students on campus" />
+              <div>
+                <span>One campus.</span>
+                <strong>Many beginnings.</strong>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="home-downloads" id="downloads" data-reveal>
-          <div className="home-section-heading"><div><span className="home-section-label">Resources</span><h2>Downloads</h2></div></div>
+          <div className="home-section-heading">
+            <div>
+              <span className="home-section-label">Resources</span>
+              <h2>Downloads</h2>
+            </div>
+          </div>
           <div className="home-download-list">
-            {(data.downloads || []).map((item, index) => <a href={item.link || "#downloads"} key={index}>{item.label}<ArrowIcon /></a>)}
+            {(data.downloads || []).map((item, index) => (
+              <a href={item.link || "#downloads"} key={index}>
+                {item.label}
+                <ArrowIcon />
+              </a>
+            ))}
           </div>
         </section>
       </main>

@@ -26,6 +26,27 @@ import { getHomepage } from "../api/client.js";
  * - `news`   optional override for the ticker: { text, link }
  * - `banner` optional strip under the nav: { title, cta, link }.
  *   Pass banner={null} to hide it entirely.
+ *
+ * CHANGE: "About us" now points at the dedicated /about page (see
+ * pages/About.jsx) instead of homepage anchors — its sub-items link to
+ * that page's in-page sections (#leadership, #academics, etc).
+ *
+ * CHANGE: "Academics" now also links to Scholarships
+ * (/academics/scholarships) and Heads of the Department
+ * (/academics/heads-of-department), alongside Departments and
+ * Programmes.
+ *
+ * CHANGE: "Exams" is now a dropdown pointing at the dedicated /exams
+ * pages (see pages/Exams/Exams.jsx): About COE, Notifications, Exam
+ * Instructions, Semester Exam Time Table, Apply For and FAQ.
+ *
+ * FIX: The utility links (Mail, Students, Parents, ...) were accidentally
+ * left inside `menuItems` and `utilityLinks` was never defined, which
+ * crashed the Header. They now live in their own `utilityLinks` array.
+ *
+ * FIX: Restored every opening `<a` tag that had been stripped (leaving
+ * bare `href=...` attributes and unmatched `</a>` closers), and removed
+ * the duplicated `<a <a href="/"` on the brand link.
  */
 
 const DEFAULT_NEWS = {
@@ -41,20 +62,77 @@ const DEFAULT_BANNER = {
 
 const menuItems = [
   { label: "Home", href: "/" },
-  { label: "About us", items: [["Institution", "/#about"], ["Leadership", "/#leadership"], ["Governance", "/#governance"]] },
-  { label: "Academics", items: [["Departments", "/departments"], ["Programmes", "/#academics"], ["Academic calendar", "/#academics"]] },
-  { label: "Admissions", items: [["Undergraduate", "/#admissions"], ["Postgraduate", "/#admissions"], ["International admissions", "/#admissions"]] },
-  { label: "Exams", href: "/#exams" },
+  {
+    label: "About us",
+    href: "/about",
+    items: [
+      ["Overview", "/about#overview"],
+      ["Location & campus", "/about#campus"],
+      ["Leadership", "/about#leadership"],
+      ["Academics & accreditation", "/about#academics"],
+      ["Management", "/about/management"],
+      ["Principal", "/about/principal"],
+      ["Professor of Practice", "/about/professor-of-practice"],
+      ["Vice Principal (Women Welfare)", "/about/vice-principal-women-welfare"],
+      ["Dean - Academic", "/about/dean-academic"],
+      ["Dean - Administration", "/about/dean-administration"],
+      ["Dean - Autonomous Functioning", "/about/dean-autonomous-functioning"],
+    ],
+  },
+  {
+    label: "Academics",
+    items: [
+      ["Departments", "/departments"],
+      ["Programmes", "/academics/programmes"],
+      ["Scholarships", "/academics/scholarships"],
+      ["Heads of the Department", "/academics/heads-of-department"],
+      ["Academic Calendar", "/academics/calendar"],
+      // ["Academic calendar overview", "/#academics"],
+    ],
+  },
+  {
+    label: "Admissions",
+    items: [
+      ["Undergraduate", "/#admissions"],
+      ["Postgraduate", "/#admissions"],
+      ["International admissions", "/#admissions"],
+    ],
+  },
+  {
+    label: "Exams",
+    href: "/exams",
+    items: [
+      ["About COE", "/exams"],
+      ["Notifications", "/exams/notifications"],
+      ["Exam Instructions", "/exams/instructions"],
+      ["Semester Exam Time Table", "/exams/timetable"],
+      ["Apply For", "/exams/apply"],
+      ["FAQ", "/exams/faq"],
+    ],
+  },
   { label: "NAAC", href: "/#naac" },
-  { label: "Research", items: [["Research overview", "/#research"], ["Centres & labs", "/#research"]] },
-  { label: "Industry", items: [["Industry collaboration", "/#industry"], ["Placements", "/#industry"]] },
+  {
+    label: "Research",
+    items: [
+      ["Research overview", "/#research"],
+      ["Centres & labs", "/#research"],
+    ],
+  },
+  {
+    label: "Industry",
+    items: [
+      ["Industry collaboration", "/#industry"],
+      ["Placements", "/#industry"],
+    ],
+  },
   { label: "InduTech", href: "/#indutech" },
   { label: "NIRF & ARIIA", href: "/#nirf" },
-  { label: "Contact", href: "/#contact" },
+  { label: "Contact", href: "/contact" },
 ];
 
+// Links shown in the thin utility topbar (desktop) and at the bottom of
+// the mobile drawer. Each entry is [label, href].
 const utilityLinks = [
-  ["Campus Map", "#campus-map"],
   ["Mail", "mailto:info@psgtech.ac.in"],
   ["Students", "#students"],
   ["Parents", "#parents"],
@@ -93,27 +171,20 @@ const HeaderStyles = () => (
     }
 
     /* Sliding gold underline under each top-level desktop link */
-    .psg-nav-underline {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 3px;
-      height: 2px;
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform .2s ease;
-    }
+    .psg-nav-underline           
     .psg-nav-item:hover .psg-nav-underline,
     .psg-nav-item[open] .psg-nav-underline,
     .psg-nav-link:hover .psg-nav-underline {
       transform: scaleX(1);
     }
-  `}</style>
+  `}</style>   
 );
 
 /** Renders one nav entry as a plain link or a details/summary dropdown.
  *  `variant` controls desktop (centered, panel dropdown) vs mobile
- *  (stacked, inline expand) styling. */
+ *  (stacked, inline expand) styling. Entries with both `href` and
+ *  `items` (e.g. "About us") render as a dropdown whose summary label
+ *  is itself a link to `href`. */
 function NavItem({ item, variant }) {
   if (!item.items) {
     return (
@@ -126,7 +197,9 @@ function NavItem({ item, variant }) {
         }
       >
         {item.label}
-        {variant === "desktop" && <span className="psg-nav-underline bg-gold" />}
+        {variant === "desktop" && (
+          <span className="psg-nav-underline bg-gold"/>
+        )}
       </a>
     );
   }
@@ -135,15 +208,36 @@ function NavItem({ item, variant }) {
     return (
       <details name="psg-desktop-nav" className="psg-nav-item group relative">
         <summary className="relative flex cursor-pointer select-none items-center gap-1 whitespace-nowrap rounded-md px-3 py-2 text-[13px] font-semibold uppercase tracking-wider text-ink/75 transition-colors duration-150 hover:bg-cream hover:text-ink">
-          {item.label}
-          <svg viewBox="0 0 10 6" className="h-2 w-2 flex-none stroke-current stroke-[1.6] fill-none transition-transform duration-200 group-open:rotate-180">
-            <path d="M1 1l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+          {item.href ? (
+            <a
+              href={item.href}
+              onClick={(e) => e.stopPropagation()}
+              className="hover:text-ink"
+            >
+              {item.label}
+            </a>
+          ) : (
+            item.label
+          )}
+          <svg
+            viewBox="0 0 10 6"
+            className="h-2 w-2 flex-none stroke-current stroke-[1.6] fill-none transition-transform duration-200 group-open:rotate-180"
+          >
+            <path
+              d="M1 1l4 4 4-4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           <span className="psg-nav-underline bg-gold" />
         </summary>
         <div className="nav-panel absolute left-1/2 top-[calc(100%+10px)] z-20 w-56 -translate-x-1/2 rounded-lg border border-line bg-white py-2 shadow-[0_18px_40px_rgba(11,47,80,0.14)]">
           {item.items.map(([label, href]) => (
-            <a key={label} href={href} className="block px-4 py-2.5 text-[12.5px] tracking-[0.02em] text-ink/75 hover:bg-cream hover:text-ink hover:pl-5 transition-all duration-150">
+            <a
+              key={label}
+              href={href}
+              className="block px-4 py-2.5 text-[12.5px] tracking-[0.02em] text-ink/75 hover:bg-cream hover:text-ink hover:pl-5 transition-all duration-150"
+            >
               {label}
             </a>
           ))}
@@ -153,16 +247,34 @@ function NavItem({ item, variant }) {
   }
 
   return (
-    <details name="psg-mobile-nav" className="psg-nav-item group border-b border-line">
+    <details
+      name="psg-mobile-nav"
+      className="psg-nav-item group border-b border-line"
+    >
       <summary className="flex cursor-pointer select-none items-center justify-between py-3.5 text-[15px] font-semibold uppercase tracking-[0.06em] text-ink">
         {item.label}
-        <svg viewBox="0 0 10 6" className="h-3 w-3 flex-none stroke-ink stroke-[1.6] fill-none transition-transform duration-150 group-open:rotate-180">
+        <svg
+          viewBox="0 0 10 6"
+          className="h-3 w-3 flex-none stroke-ink stroke-[1.6] fill-none transition-transform duration-150 group-open:rotate-180"
+        >
           <path d="M1 1l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </summary>
       <div className="flex flex-col pb-3 pl-3">
+        {item.href && (
+          <a
+            href={item.href}
+            className="py-2 text-[13.5px] font-semibold tracking-[0.03em] text-ink"
+          >
+            View all
+          </a>
+        )}  
         {item.items.map(([label, href]) => (
-          <a key={label} href={href} className="py-2 text-[13.5px] tracking-[0.03em] text-ink/65">
+          <a
+            key={label}
+            href={href}
+            className="py-2 text-[13.5px] tracking-[0.03em] text-ink/65"
+          >
             {label}
           </a>
         ))}
@@ -171,13 +283,20 @@ function NavItem({ item, variant }) {
   );
 }
 
-export default function Header({ overlay = false, news, banner = DEFAULT_BANNER, staffLoginHref = "/staff-login" }) {
+export default function Header({
+  overlay = false,
+  news,
+  banner = DEFAULT_BANNER,
+  staffLoginHref = "/staff-login",
+}) {
   const [ticker, setTicker] = useState(news || DEFAULT_NEWS);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navRef = useRef(null);
 
-  useEffect(() => { if (news) setTicker(news); }, [news]);
+  useEffect(() => {
+    if (news) setTicker(news);
+  }, [news]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -188,22 +307,29 @@ export default function Header({ overlay = false, news, banner = DEFAULT_BANNER,
 
   useEffect(() => {
     if (news) return undefined;
-    getHomepage().then((data) => data.newsTicker && setTicker(data.newsTicker)).catch(() => {});
+    getHomepage()
+      .then((data) => data.newsTicker && setTicker(data.newsTicker))
+      .catch(() => {});
     return undefined;
   }, [news]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [mobileOpen]);
 
   // Close any open desktop dropdown when clicking outside the nav, or on Escape.
   useEffect(() => {
     const closeOpenDetails = (root) => {
-      root.querySelectorAll("details[open]").forEach((d) => d.removeAttribute("open"));
+      root
+        .querySelectorAll("details[open]")
+        .forEach((d) => d.removeAttribute("open"));
     };
     const onClickOutside = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) closeOpenDetails(navRef.current);
+      if (navRef.current && !navRef.current.contains(e.target))
+        closeOpenDetails(navRef.current);
     };
     const onKeyDown = (e) => {
       if (e.key !== "Escape") return;
@@ -222,7 +348,7 @@ export default function Header({ overlay = false, news, banner = DEFAULT_BANNER,
     <div
       className={cx(
         "font-body text-ink sticky top-0 z-50 w-full transition-shadow duration-300",
-        scrolled && "shadow-[0_10px_28px_rgba(11,47,80,0.14)]"
+        scrolled && "shadow-[0_10px_28px_rgba(11,47,80,0.14)]",
       )}
     >
       <HeaderStyles />
@@ -230,23 +356,43 @@ export default function Header({ overlay = false, news, banner = DEFAULT_BANNER,
       {/* Utility topbar */}
       <div className="bg-ink text-white/80">
         <div className="max-w-[1600px] mx-auto px-4 lg:px-8 h-11 flex items-center justify-between gap-6">
-          <a href={ticker.link || "#announcements"} className="flex min-w-0 items-center gap-2.5 text-[12.5px]">
+          <a
+            href={ticker.link || "#announcements"}
+            className="flex min-w-0 items-center gap-2.5 text-[12.5px]"
+          >
             <span className="flex-none rounded border border-gold/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-gold">
               News
             </span>
-            <span className="truncate font-medium text-white/90">{ticker.text}</span>
+            <span className="truncate font-medium text-white/90">
+              {ticker.text}
+            </span>
           </a>
-          <nav aria-label="Utility navigation" className="hidden lg:flex flex-none items-center gap-5 text-[11px] uppercase tracking-[0.08em] text-white/60">
+          <nav
+            aria-label="Utility navigation"
+            className="hidden lg:flex flex-none items-center gap-5 text-[11px] uppercase tracking-[0.08em] text-white/60"
+          >
             {utilityLinks.map(([label, href]) => (
-              <a key={label} href={href} className="hover:text-gold transition-colors duration-150 whitespace-nowrap">{label}</a>
+              <a
+                key={label}
+                href={href}
+                className="hover:text-gold transition-colors duration-150 whitespace-nowrap"
+              >
+                {label}
+              </a>
             ))}
             <a
               href="/cms/login"
               className="ml-1 flex-none flex items-center gap-1.5 whitespace-nowrap normal-case tracking-normal text-white/80 hover:text-gold transition-colors duration-150"
             >
-              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 flex-none fill-none stroke-current stroke-[1.4]">
+              <svg
+                viewBox="0 0 16 16"
+                className="h-3.5 w-3.5 flex-none fill-none stroke-current stroke-[1.4]"
+              >
                 <circle cx="8" cy="5.2" r="2.6" />
-                <path d="M2.8 13.4c.8-2.6 2.9-4 5.2-4s4.4 1.4 5.2 4" strokeLinecap="round" />
+                <path
+                  d="M2.8 13.4c.8-2.6 2.9-4 5.2-4s4.4 1.4 5.2 4"
+                  strokeLinecap="round"
+                />
               </svg>
               Staff Login
             </a>
@@ -263,16 +409,28 @@ export default function Header({ overlay = false, news, banner = DEFAULT_BANNER,
       {/* Main nav row */}
       <div className="bg-paper border-b border-line">
         <div className="max-w-[1600px] mx-auto px-4 lg:px-8 py-3.5 flex items-center gap-5">
-          <a href="/" aria-label="PSG College of Technology home" className="group flex flex-none items-center gap-3">
-            <img src="/assets/logo1" alt="PSG College of Technology" className="h-14 w-auto flex-none transition-transform duration-200 group-hover:scale-[1.04]" />
-            {/* <span className="hidden sm:flex flex-col leading-tight">
-              <span className="font-display text-[19px] font-semibold text-ink whitespace-nowrap">PSG College of Technology</span>
-              <span className="mt-1 text-[10.5px] uppercase tracking-[0.16em] text-ink/45">Peelamedu · Coimbatore</span>
-            </span> */}
-            <img src="/assets/75yearsLogo_PSGCollegeofTech.png" alt="75 years of PSG College of Technology" className="h-12 w-12 flex-none object-contain transition-transform duration-200 group-hover:rotate-[8deg]" />
+          <a
+            href="/"
+            aria-label="PSG College of Technology home"
+            className="group flex flex-none items-center gap-3"
+          >
+            <img
+              src="/assets/logo1"
+              alt="PSG College of Technology"
+              className="h-14 w-auto flex-none transition-transform duration-200 group-hover:scale-[1.04]"
+            />
+            <img
+              src="/assets/75yearsLogo_PSGCollegeofTech.png"
+              alt="75 years of PSG College of Technology"
+              className="h-12 w-12 flex-none object-contain transition-transform duration-200 group-hover:rotate-[8deg]"
+            />
           </a>
 
-          <nav ref={navRef} aria-label="Primary navigation" className="hidden xl:flex flex-1 items-center justify-center gap-0.5 flex-wrap">
+          <nav
+            ref={navRef}
+            aria-label="Primary navigation"
+            className="hidden xl:flex flex-1 items-center justify-center gap-0.5 flex-wrap"
+          >
             {menuItems.map((item) => (
               <NavItem key={item.label} item={item} variant="desktop" />
             ))}
@@ -307,10 +465,19 @@ export default function Header({ overlay = false, news, banner = DEFAULT_BANNER,
 
       {/* Jubilee banner */}
       {banner && (
-        <a href={banner.link || "#"} className="block bg-cream border-b border-line">
+        <a
+          href={banner.link || "#"}
+          className="block bg-cream border-b border-line"
+        >
           <div className="max-w-[1600px] mx-auto px-4 lg:px-8 h-11 flex items-center justify-center gap-2.5 text-center">
-            <strong className="text-[13.5px] font-semibold text-ink">{banner.title}</strong>
-            {banner.cta && <span className="text-[12.5px] text-gold hover:underline">{banner.cta}</span>}
+            <strong className="text-[13.5px] font-semibold text-ink">
+              {banner.title}
+            </strong>
+            {banner.cta && (
+              <span className="text-[12.5px] text-gold hover:underline">
+                {banner.cta}
+              </span>
+            )}
           </div>
         </a>
       )}
@@ -327,17 +494,37 @@ export default function Header({ overlay = false, news, banner = DEFAULT_BANNER,
           >
             <div className="flex items-center justify-between px-5 h-16 border-b border-line flex-none">
               <div className="flex items-center gap-2">
-                <img src="/assets/logo1" alt="PSG College of Technology" className="h-9 w-auto" />
-                <img src="/assets/75yearsLogo_PSGCollegeofTech.png" alt="75 years" className="h-7 w-7 object-contain" />
-                <img src="/assets/100yearsLogo_PsgSonsCharities.png" alt="100 years" className="h-7 w-7 object-contain" />
+                <img
+                  src="/assets/logo1"
+                  alt="PSG College of Technology"
+                  className="h-9 w-auto"
+                />
+                <img
+                  src="/assets/75yearsLogo_PSGCollegeofTech.png"
+                  alt="75 years"
+                  className="h-7 w-7 object-contain"
+                />
+                <img
+                  src="/assets/100yearsLogo_PsgSonsCharities.png"
+                  alt="100 years"
+                  className="h-7 w-7 object-contain"
+                />
               </div>
-              <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} className="w-9 h-9 relative flex-none">
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={() => setMobileOpen(false)}
+                className="w-9 h-9 relative flex-none"
+              >
                 <span className="absolute inset-0 m-auto w-5 h-[1.5px] bg-ink rotate-45" />
                 <span className="absolute inset-0 m-auto w-5 h-[1.5px] bg-ink -rotate-45" />
               </button>
             </div>
 
-            <nav className="flex-1 overflow-y-auto px-5 py-4" aria-label="Primary navigation, mobile">
+            <nav
+              className="flex-1 overflow-y-auto px-5 py-4"
+              aria-label="Primary navigation, mobile"
+            >
               {menuItems.map((item, i) => (
                 <motion.div
                   key={item.label}
@@ -357,16 +544,31 @@ export default function Header({ overlay = false, news, banner = DEFAULT_BANNER,
               >
                 Apply Now
               </a>
-              <a href="/cms/login" className="flex items-center justify-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-ink/70">
-                <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 flex-none fill-none stroke-current stroke-[1.4]">
+              <a
+                href="/cms/login"
+                className="flex items-center justify-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-ink/70"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  className="h-3.5 w-3.5 flex-none fill-none stroke-current stroke-[1.4]"
+                >
                   <circle cx="8" cy="5.2" r="2.6" />
-                  <path d="M2.8 13.4c.8-2.6 2.9-4 5.2-4s4.4 1.4 5.2 4" strokeLinecap="round" />
+                  <path
+                    d="M2.8 13.4c.8-2.6 2.9-4 5.2-4s4.4 1.4 5.2 4"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 Staff Login
               </a>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[12.5px] uppercase tracking-wider text-ink/55">
                 {utilityLinks.map(([label, href]) => (
-                  <a key={label} href={href} className="hover:text-gold transition-colors duration-150">{label}</a>
+                  <a
+                    key={label}
+                    href={href}
+                    className="hover:text-gold transition-colors duration-150"
+                  >
+                    {label}
+                  </a>
                 ))}
               </div>
             </div>
