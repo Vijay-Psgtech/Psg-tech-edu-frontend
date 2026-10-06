@@ -1,5 +1,5 @@
 import React from "react";
-import LeaderContactPage from "../components/LeaderContactPage.jsx";
+import LeaderContactPage from "../components/Leadercontactpage.jsx";
 
 /**
  * DeanAcademic.jsx — reached from the About us dropdown.
