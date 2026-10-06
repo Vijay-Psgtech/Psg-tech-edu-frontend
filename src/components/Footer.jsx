@@ -1,5 +1,5 @@
 import React from "react";
-import MapEmbed from "./MapEmbed.jsx";
+import MapEmbed from "./Mapembed.jsx";
 
 /**
  * Footer.jsx — rebuilt from the plain placeholder version to match

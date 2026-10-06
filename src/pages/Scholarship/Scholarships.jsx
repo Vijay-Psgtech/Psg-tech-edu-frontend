@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../../components/Header.jsx";
-import { SCHOLARSHIPS } from "./scholarshipsData.js";
+import { SCHOLARSHIPS } from "./Scholarshipsdata.js";
 
 /**
  * Scholarships.jsx — "Scholarships" index, reached from the

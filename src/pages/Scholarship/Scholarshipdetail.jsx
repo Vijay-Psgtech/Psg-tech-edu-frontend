@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../../components/Header.jsx";
-import { getScholarship } from "./scholarshipsData.js";
+import { getScholarship } from "./Scholarshipsdata.js";
 
 /**
  * ScholarshipDetail.jsx — reached at /academics/scholarships/:slug
